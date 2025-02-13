@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -15,6 +16,12 @@ import (
 	desc "auth/pkg/auth_v1"
 )
 
+var configPath string
+
+func init() {
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+}
+                                               
 const grpcPort = 50051
 
 type server struct {
