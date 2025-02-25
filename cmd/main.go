@@ -8,12 +8,15 @@ import (
 	"net"
 
 	"github.com/brianvoe/gofakeit"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	desc "auth/pkg/auth_v1"
+	"auth/pkg/config"
+	"auth/pkg/config/env"
 )
 
 var configPath string
@@ -21,8 +24,6 @@ var configPath string
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
-                                               
-const grpcPort = 50051
 
 type server struct {
 	desc.UnimplementedAuthV1Server
@@ -68,10 +69,34 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.
 }
 
 func main() {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	flag.Parse()
+	ctx := context.Background()
+	
+	err := config.Load(configPath)
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	grpcConfig, err := env.NewGRPCConfig()
+	if err != nil {
+		log.Fatalf("failed to get grpc config: %v", err)
+	}
+
+	pgConfig, err := env.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %v", err)
+	}
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcConfig.Address()))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
+	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer pool.Close()
 
 	s := grpc.NewServer()
 	reflection.Register(s)
