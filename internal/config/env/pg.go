@@ -1,7 +1,7 @@
 package env
 
 import (
-	"auth/pkg/config"
+	"auth/internal/config"
 	"errors"
 	"os"
 )
@@ -30,4 +30,3 @@ func NewPGConfig() (config.PGConfig, error) {
 func (cfg *pgConfig) DSN() string {
 	return cfg.dsn
 }
-   

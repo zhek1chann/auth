@@ -71,7 +71,7 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.
 func main() {
 	flag.Parse()
 	ctx := context.Background()
-	
+
 	err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)

@@ -1,7 +1,7 @@
 package env
 
 import (
-	"auth/pkg/config"
+	"auth/internal/config"
 	"errors"
 	"net"
 	"os"

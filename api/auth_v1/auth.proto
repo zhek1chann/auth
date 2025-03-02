@@ -26,7 +26,8 @@ message User{
 
 enum Roles{
     user = 0;
-    admin = 1;
+    supplier =1;
+    admin = 2;
 }
 
 message CreateRequest{
