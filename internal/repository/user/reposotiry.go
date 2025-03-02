@@ -5,6 +5,7 @@ import (
 	"auth/internal/model"
 	"auth/internal/repository"
 	"context"
+	"time"
 
 	converter "auth/internal/repository/user/converter"
 	modelRepo "auth/internal/repository/user/model"
@@ -110,7 +111,8 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 func (r *repo) Update(ctx context.Context, id int64, info *model.UserInfo) error {
 	builder := sq.Update(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: id})
+		Where(sq.Eq{idColumn: id}).
+		Set(updatedAtColumn, time.Now())
 
 	if info.Name != "" {
 		builder = builder.Set(nameColumn, info.Name)
