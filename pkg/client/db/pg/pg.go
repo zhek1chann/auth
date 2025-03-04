@@ -1,8 +1,8 @@
 package pg
 
 import (
-	"auth/internal/client/db"
-	"auth/internal/client/db/prettier"
+	"auth/pkg/client/db"
+	"auth/pkg/client/db/prettier"
 	"context"
 	"fmt"
 	"log"

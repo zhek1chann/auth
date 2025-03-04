@@ -8,6 +8,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/brianvoe/gofakeit v3.18.0+incompatible // indirect
 	github.com/georgysavva/scany v1.2.3 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.3 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

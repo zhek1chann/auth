@@ -1,7 +1,7 @@
 package pg
 
 import (
-	"auth/internal/client/db"
+	"auth/pkg/client/db"
 	"context"
 
 	"github.com/jackc/pgx/v4/pgxpool"

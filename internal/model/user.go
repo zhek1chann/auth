@@ -7,14 +7,20 @@ import (
 
 type User struct {
 	ID        int64
-	Info      UserInfo
+	Info      *UserInfo
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
 }
 
 type UserInfo struct {
-	Name           string
-	PhoneNumber          string
-	HassedPassword string
-	Role           int
+	Name        string
+	PhoneNumber string
+	Role        int
+}
+
+type AuthUser struct {
+	ID             int64
+	Info           *UserInfo
+	Password       string
+	HashedPassword string
 }

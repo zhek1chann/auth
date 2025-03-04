@@ -1,8 +1,8 @@
 package transaction
 
 import (
-	"auth/internal/client/db"
-	"auth/internal/client/db/pg"
+	"auth/pkg/client/db"
+	"auth/pkg/client/db/pg"
 	"context"
 
 	"github.com/jackc/pgx/v4"

@@ -1,9 +1,8 @@
 package user
 
 import (
-	"auth/internal/client/db"
 	"auth/internal/model"
-	"auth/internal/repository"
+	"auth/pkg/client/db"
 	"context"
 	"time"
 
@@ -14,12 +13,12 @@ import (
 )
 
 const (
-	tableName = "user"
+	tableName = "users"
 
 	idColumn             = "id"
 	nameColumn           = "name"
-	phoneNumberColumn    = "email"
-	hashedPasswordColumn = "password"
+	phoneNumberColumn    = "phone_number"
+	hashedPasswordColumn = "hashed_password"
 	roleColumn           = "role"
 	createdAtColumn      = "created_at"
 	updatedAtColumn      = "updated_at"
@@ -29,15 +28,15 @@ type repo struct {
 	db db.Client
 }
 
-func NewRepository(db db.Client) repository.UserRepository {
+func NewRepository(db db.Client) *repo {
 	return &repo{db: db}
 }
 
-func (r *repo) Create(ctx context.Context, info *model.UserInfo) (int64, error) {
+func (r *repo) Create(ctx context.Context, user *model.AuthUser) (int64, error) {
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, phoneNumberColumn, hashedPasswordColumn, roleColumn).
-		Values(info.Name, info.PhoneNumber, info.HassedPassword, info.Role).
+		Values(user.Info.Name, user.Info.PhoneNumber, user.HashedPassword, user.Info.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builder.ToSql()
@@ -59,14 +58,14 @@ func (r *repo) Create(ctx context.Context, info *model.UserInfo) (int64, error) 
 	return id, nil
 }
 
-func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
+func (r *repo) GetById(ctx context.Context, id int64) (*model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, phoneNumberColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
 		From(tableName).
-		Where(sq.Eq{idColumn: id}).
-		Limit(1)
+		Where(sq.Eq{idColumn: id})
 
 	query, args, err := builder.ToSql()
+
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +76,42 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	var user modelRepo.User
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.PhoneNumber, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
+	var userInfo modelRepo.UserInfo
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &userInfo.Name, &userInfo.PhoneNumber, &userInfo.Role, &user.CreatedAt, &user.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	user.Info = &userInfo
+
+	return converter.ToUserFromRepo(&user), nil
+}
+
+func (r *repo) GetByPhoneNumber(ctx context.Context, phoneNumber string) (*model.AuthUser, error) {
+	builder := sq.Select(idColumn, nameColumn, phoneNumberColumn, roleColumn, hashedPasswordColumn).
+		PlaceholderFormat(sq.Dollar).
+		From(tableName).
+		Where(sq.Eq{phoneNumberColumn: phoneNumber})
+
+	query, args, err := builder.ToSql()
+
 	if err != nil {
 		return nil, err
 	}
 
-	return converter.ToUserFromRepo(&user), nil
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
+	var user modelRepo.AuthUser
+	var userInfo modelRepo.UserInfo
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &userInfo.Name, &userInfo.PhoneNumber, &userInfo.Role, &user.HashedPassword)
+	if err != nil {
+		return nil, err
+	}
+	user.Info = &userInfo
+
+	return converter.ToAuthUserFromRepo(&user), nil
 }
 
 func (r *repo) Delete(ctx context.Context, id int64) error {
@@ -119,9 +148,6 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UserInfo) error
 	}
 	if info.PhoneNumber != "" {
 		builder = builder.Set(phoneNumberColumn, info.PhoneNumber)
-	}
-	if info.HassedPassword != "" {
-		builder = builder.Set(hashedPasswordColumn, info.HassedPassword)
 	}
 
 	query, args, err := builder.ToSql()
