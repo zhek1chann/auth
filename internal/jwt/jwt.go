@@ -18,7 +18,9 @@ func NewJSONWebToken(jwtSecret string) *JSONWebToken {
 }
 
 type Claims struct {
+	Id       int64  `json:"id"`
 	Username string `json:"username"`
+	Role     int    `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -27,12 +29,12 @@ func (sa *JSONWebToken) GetJWTKey() []byte {
 }
 
 func (sa *JSONWebToken) GenerateJSONWebTokens(id int64, username string, role int) (string, string, error) {
-	accessToken, err := sa.generateShortLivedJSONWebToken(username)
+	accessToken, err := sa.generateShortLivedJSONWebToken(id, username, role)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := sa.generateLongLivedJSONWebToken(username)
+	refreshToken, err := sa.generateLongLivedJSONWebToken(id, username, role)
 	if err != nil {
 		return "", "", err
 	}
@@ -40,19 +42,21 @@ func (sa *JSONWebToken) GenerateJSONWebTokens(id int64, username string, role in
 	return accessToken, refreshToken, nil
 }
 
-func (sa *JSONWebToken) generateShortLivedJSONWebToken(username string) (string, error) {
+func (sa *JSONWebToken) generateShortLivedJSONWebToken(id int64, username string, role int) (string, error) {
 	expiration := time.Now().Add(5 * time.Minute)
-	return sa.generateJSONWebToken(username, expiration)
+	return sa.generateJSONWebToken(id, username, role, expiration)
 }
 
-func (sa *JSONWebToken) generateLongLivedJSONWebToken(username string) (string, error) {
+func (sa *JSONWebToken) generateLongLivedJSONWebToken(id int64, username string, role int) (string, error) {
 	expiration := time.Now().Add(24 * time.Hour)
-	return sa.generateJSONWebToken(username, expiration)
+	return sa.generateJSONWebToken(id, username, role, expiration)
 }
 
-func (sa *JSONWebToken) generateJSONWebToken(username string, expirationTime time.Time) (string, error) {
+func (sa *JSONWebToken) generateJSONWebToken(id int64, username string, role int, expirationTime time.Time) (string, error) {
 	claims := &Claims{
+		Id:       id,
 		Username: username,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
@@ -75,7 +79,7 @@ func (sa *JSONWebToken) RefreshAccessToken(refreshToken string) (string, error) 
 		return "", errors.New("invalid refresh token")
 	}
 
-	newAccessToken, err := sa.generateShortLivedJSONWebToken(claims.Username)
+	newAccessToken, err := sa.generateShortLivedJSONWebToken(claims.Id, claims.Username, claims.Role)
 	if err != nil {
 		return "", err
 	}

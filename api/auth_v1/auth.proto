@@ -58,7 +58,7 @@ service AuthV1 {
 // =================
 
 message RegisterRequest{
-  RegisterUserInfo info = 1;
+  RegisterUserInfo user = 1;
 }
 
 message RegisterResponse{

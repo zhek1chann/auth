@@ -14,7 +14,7 @@ func (i *AuthImplementation) Register(ctx context.Context, req *descAuth.Registe
 		*descAuth.RegisterUserInfo
 		validator.Validator
 	}{
-		RegisterUserInfo: req.GetInfo(),
+		RegisterUserInfo: req.GetUser(),
 	}
 	// TODO: validator for phone number, and equal for password
 	form.CheckField(validator.NotBlank(form.Info.Name), "name", "This field cannot be blank")

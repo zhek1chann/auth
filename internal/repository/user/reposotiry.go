@@ -4,6 +4,8 @@ import (
 	"auth/internal/model"
 	"auth/pkg/client/db"
 	"context"
+	"database/sql"
+	"errors"
 	"time"
 
 	converter "auth/internal/repository/user/converter"
@@ -95,6 +97,9 @@ func (r *repo) GetByPhoneNumber(ctx context.Context, phoneNumber string) (*model
 	query, args, err := builder.ToSql()
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, model.ErrNoRows
+		}
 		return nil, err
 	}
 
