@@ -2,14 +2,56 @@ syntax = "proto3";
 
 package auth_v1;
 
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
 option go_package = "github.com/olezhek28/microservices_course/week_6/jwt/pkg/auth_v1;auth_v1";
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Auth API"
+    version: "1.0.0"
+    contact: {
+      name: "Zhek1chann"
+    };
+  };
+
+  host: "localhost:8080",
+  schemes: HTTP,
+  schemes: HTTPS,
+  consumes: "application/json",
+  produces: "application/json",
+};
+
+
+
 service AuthV1 {
-  rpc Login (LoginRequest) returns (LoginResponse);
-  rpc Register(RegisterRequest) returns (RegisterResponse);
-  rpc GetRefreshToken (GetRefreshTokenRequest) returns (GetRefreshTokenResponse);
-  rpc GetAccessToken (GetAccessTokenRequest) returns (GetAccessTokenResponse);
+  rpc Login (LoginRequest) returns (LoginResponse){
+    option (google.api.http) = {
+      post: "/auth/v1/Login"
+      body: "*"
+    };
+  }
+  rpc Register(RegisterRequest) returns (RegisterResponse){
+    option (google.api.http) = {
+      post: "/auth/v1/Register"
+      body: "*"
+    };
+  };
+  rpc GetRefreshToken (GetRefreshTokenRequest) returns (GetRefreshTokenResponse){
+    option (google.api.http) = {
+      post: "/auth/v1/RefreshToken"
+      body: "*"
+    };
+  };
+  rpc GetAccessToken (GetAccessTokenRequest) returns (GetAccessTokenResponse){
+    option (google.api.http) = {
+      post: "/auth/v1/AccessToken"
+      body: "*"
+    };
+  };
 }
+
 
 // =================
 // register 

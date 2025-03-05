@@ -3,11 +3,18 @@ syntax = "proto3";
 package access_v1;
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
 
 option go_package = "github.com/olezhek28/microservices_course/week_6/jwt/pkg/access_v1;access_v1";
 
 service AccessV1 {
-  rpc Check(CheckRequest) returns (google.protobuf.Empty);
+  rpc Check(CheckRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      post: "/auth/v1/Register"
+      body: "*"
+    };
+  };;
 }
 
 message CheckRequest {
